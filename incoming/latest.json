@@ -1,0 +1,11 @@
+{
+  "version": "0.2.4",
+  "notes": "# KLEMMBIX 0.2.4\r\n\r\n- Windows-App mit lokalem Teilepaket und nativen KLEMMBIX-Dateien.\r\n- Zuletzt geöffnete Dateien, Wiederherstellung und Windows-Dateizuordnung.\r\n- Signierte Updates mit Fortschritt und bewusstem Installationszeitpunkt.\r\n- Gemeinsame Versionskennung für Website, PWA und Windows.\r\n\r\nDas erste Installieren benötigt bei fehlendem WebView2 Internet. Danach stehen\r\nlokaler Editor, Bibliothek und Dateien auch offline zur Verfügung.\r\n",
+  "pub_date": "2026-11-14T18:05:56.330Z",
+  "platforms": {
+    "windows-x86_64": {
+      "url": "https://github.com/mikesch250/KLEMMBIX-releases/releases/download/v0.2.4/KLEMMBIX-Setup.exe",
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSbyt4WWZZQ0dkZjJzMGxZZ1hMU3ZtY1BpODhPN2l1NmdIK3BLSzRJUFdFZ00vaGtTaXhUZ05KNGFMRXBPeTBhdGEwMnVuaGVLamFIWkM0KzBMRlRtNE5Ecy9ZdUNIVWdBPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk0Njc5MDE1CWZpbGU6S0xFTU1CSVhfMC4yLjRfeDY0LXNldHVwLmV4ZQl2ZXJzaW9uOjAuMi40CnZ5NGhTUEl3N0JSNmUwSHZSY2ljY2R4b0wxelU1MHVvQld2Z3hOL2dseHJybmNoZ0pIc1phYmVacnM2dVJjZ1JIelFNR2hXa3RsdUtYd3hQVlVqbkNnPT0K"
+    }
+  }
+}
