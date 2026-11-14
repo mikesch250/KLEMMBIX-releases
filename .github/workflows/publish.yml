@@ -1,0 +1,58 @@
+name: Publish signed KLEMMBIX binaries
+on:
+  push:
+    branches: [main]
+    paths: ['incoming/**']
+permissions:
+  contents: write
+concurrency:
+  group: public-release
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '24.22.3'
+      - name: Validate release request
+        id: request
+        run: |
+          node --input-type=module <<'JS'
+          import {existsSync,readFileSync,appendFileSync,statSync} from 'node:fs';
+          import {createHash} from 'node:crypto';
+          if(!existsSync('incoming/release.json'))process.exit(0);
+          const request=JSON.parse(readFileSync('incoming/release.json','utf8'));
+          if(!/^\d+\.\d+\.\d+$/.test(request.version)||!/^([a-f0-9]{40})$/.test(request.commit))throw Error('Invalid release identity');
+          const manifest=JSON.parse(readFileSync('incoming/latest.json','utf8'));
+          const expected=`https://github.com/${process.env.GITHUB_REPOSITORY}/releases/download/v${request.version}/KLEMMBIX-Setup.exe`;
+          if(manifest.version!==request.version||manifest.platforms?.['windows-x86_64']?.url!==expected)throw Error('Invalid update manifest');
+          if(manifest.platforms['windows-x86_64'].signature!==readFileSync('incoming/KLEMMBIX-Setup.exe.sig','utf8').trim())throw Error('Signature mismatch');
+          if(statSync('incoming/KLEMMBIX-Setup.exe').size>100_000_000)throw Error('Release exceeds the publisher transport limit');
+          if(createHash('sha256').update(readFileSync('incoming/KLEMMBIX-Setup.exe')).digest('hex')!==request.sha256)throw Error('Installer hash mismatch');
+          appendFileSync(process.env.GITHUB_OUTPUT,`version=${request.version}\nready=true\n`);
+          JS
+      - name: Publish public installer and signed manifest
+        if: steps.request.outputs.ready == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_VERSION: ${{ steps.request.outputs.version }}
+        run: |
+          gh release create "v$RELEASE_VERSION" --target "$GITHUB_SHA" --title "KLEMMBIX $RELEASE_VERSION" --notes-file incoming/notes.md incoming/KLEMMBIX-Setup.exe incoming/KLEMMBIX-Setup.exe.sig incoming/latest.json incoming/release.json
+      - name: Keep only metadata in the current checkout
+        if: steps.request.outputs.ready == 'true'
+        run: |
+          cp incoming/latest.json latest.json
+          cp incoming/release.json release.json
+          git rm incoming/KLEMMBIX-Setup.exe incoming/KLEMMBIX-Setup.exe.sig incoming/latest.json incoming/release.json incoming/notes.md
+          git add latest.json release.json
+          git config user.name mikesch250
+          git config user.email mikesch250@users.noreply.github.com
+          test "$(git config user.name)" = mikesch250
+          git commit -m "Publish KLEMMBIX release metadata"
+          git pull --rebase origin main
+          git push origin main
